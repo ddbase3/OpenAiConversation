@@ -2,7 +2,7 @@
 
 namespace OpenAiConversation;
 
-use Base3\Core\ServiceLocator;
+use Base3\Api\IContainer;
 use Base3Manager\Plugin\AbstractPlugin;
 
 class OpenAiConversationPlugin extends AbstractPlugin {
@@ -10,12 +10,12 @@ class OpenAiConversationPlugin extends AbstractPlugin {
 	// Implementation of IPlugin
 
 	public function init() {
-		$this->servicelocator
+		$this->container
 
 			->set(
 				$this->getName(),
 				$this,
-				ServiceLocator::SHARED);
+				IContainer::SHARED);
 	
 	}
 }
