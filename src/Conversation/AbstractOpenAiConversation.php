@@ -23,7 +23,7 @@ abstract class AbstractOpenAiConversation implements IConversation {
 
 		$this->options = [
 			'temperature' => 0.7,
-			'max_tokens' => 1000,
+			'max_tokens' => 1000
 		];
 	}
 
