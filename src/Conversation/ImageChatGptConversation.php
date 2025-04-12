@@ -7,7 +7,7 @@ class ImageChatGptConversation extends AbstractOpenAiConversation {
 	public function __construct() {
 		parent::__construct();
 		$this->model = 'gpt-4-turbo';
-		$this->options['max_tokens'] = 1500;
+		$this->options['max_tokens'] = 2000;
 	}
 
 	public function chat(array $messages, array $context = []): string {
