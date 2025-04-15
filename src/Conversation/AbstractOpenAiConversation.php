@@ -3,7 +3,7 @@
 namespace OpenAiConversation\Conversation;
 
 use Base3\Api\IConversation;
-use Base3\Core\ServiceLocator;
+use Base3\Configuration\Api\IConfiguration;
 
 abstract class AbstractOpenAiConversation implements IConversation {
 
@@ -11,10 +11,7 @@ abstract class AbstractOpenAiConversation implements IConversation {
 	protected $model;
 	protected $options;
 
-	public function __construct() {
-		$servicelocator = ServiceLocator::getInstance();
-		$configuration = $servicelocator->get('configuration');
-		if ($configuration == null) return;
+	public function __construct(IConfiguration $configuration) {
 		$cnf = $configuration->get('conversation');
 		if ($cnf == null) return;
 		$this->apiKey = $cnf['apikeyopenai'];
