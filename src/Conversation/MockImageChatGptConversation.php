@@ -2,7 +2,13 @@
 
 namespace OpenAiConversation\Conversation;
 
+use Base3\Configuration\Api\IConfiguration;
+
 class MockImageChatGptConversation extends ImageChatGptConversation {
+
+public function __construct(IConfiguration $configuration) {
+	parent::__construct($configuration);
+}
 
 protected function sendRequest(array $messages, array $context = []) {
     // Simulate two different completions (choices)

@@ -2,9 +2,16 @@
 
 namespace OpenAiConversation\Test;
 
+use Base3\Configuration\Api\IConfiguration;
 use Base3\Core\AbstractOutput;
 
 class ImageTest extends AbstractOutput {
+
+	private $configuration;
+
+	public function __construct(IConfiguration $configuration) {
+		$this->configuration = $configuration;
+	}
 
 	public function getOutput($out = "html") {
 
@@ -14,7 +21,7 @@ class ImageTest extends AbstractOutput {
 		$contents = file_get_contents($imagePath);
 		$b64str = base64_encode($contents);
 
-		$conversation = new \OpenAiConversation\Conversation\ImageChatGptConversation;
+		$conversation = new \OpenAiConversation\Conversation\ImageChatGptConversation($this->configuration);
 
 		$messages = [
 			[ 'role' => 'system', 'content' => 'You are an assistant that returns detailed, well-structured HTML content. All your responses must be valid HTML using proper elements like <p>, <ul>, <strong>, <em>, etc. Do not include code blocks or markdown formatting.' ],

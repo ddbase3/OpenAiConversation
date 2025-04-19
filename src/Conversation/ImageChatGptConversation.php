@@ -2,10 +2,12 @@
 
 namespace OpenAiConversation\Conversation;
 
+use Base3\Configuration\Api\IConfiguration;
+
 class ImageChatGptConversation extends AbstractOpenAiConversation {
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct(IConfiguration $configuration) {
+		parent::__construct($configuration);
 		$this->model = 'gpt-4-turbo';
 		$this->options['max_tokens'] = 2000;
 	}
