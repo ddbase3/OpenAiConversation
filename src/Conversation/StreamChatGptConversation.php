@@ -20,6 +20,7 @@ class StreamChatGptConversation extends AbstractOpenAiConversation {
             'model' => $model,
             'messages' => $messages,
             'stream' => true,
+            'max_tokens' => 4096
         ]);
 
         $headers = [
