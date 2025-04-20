@@ -19,57 +19,56 @@ class StreamChatGptConversation extends AbstractOpenAiConversation {
         $data = array_merge($this->options, $context, [
             'model' => $model,
             'messages' => $messages,
-            'stream' => true
+            'stream' => true,
         ]);
 
         $headers = [
             'Content-Type: application/json',
-            'Authorization: Bearer ' . $this->apiKey
+            'Authorization: ' . 'Bearer ' . $this->apiKey,
         ];
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Wurde auf true geändert
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $chunk) use (&$output) {
-            $lines = explode("\n", $chunk);
-            foreach ($lines as $line) {
-                if ($this->my_str_starts_with($line, 'data: ')) {
-                    $json = trim(substr($line, 6));
-                    if ($json === '[DONE]') continue;
+        $output = '';
 
-                    $data = json_decode($json, true);
-                    if (isset($data['choices'][0]['delta']['content'])) {
-                        $content = $data['choices'][0]['delta']['content'];
-                        $output .= $content; // Zum Sammeln der Ausgabe in der Variablen
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_WRITEFUNCTION => function ($ch, $chunk) use (&$output) {
+                $lines = explode("\n", $chunk);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if (str_starts_with($line, 'data: ')) {
+                        $json = substr($line, 6);
+                        if ($json === '[DONE]') {
+                            return strlen($chunk);
+                        }
+
+                        $data = json_decode($json, true);
+                        if (isset($data['choices'][0]['delta']['content'])) {
+                            $output .= $data['choices'][0]['delta']['content'];
+                        }
                     }
                 }
+                return strlen($chunk);
             }
-            return strlen($chunk);
-        });
+        ]);
 
-        // Den Curl-Request ausführen und sicherstellen, dass keine Fehler auftreten
-        $result = curl_exec($ch);
+        curl_exec($ch);
 
         if (curl_errno($ch)) {
-            throw new \RuntimeException('OpenAI API stream failed: ' . curl_error($ch));
+            $error = curl_error($ch);
+            curl_close($ch);
+            throw new \RuntimeException('OpenAI API stream failed: ' . $error);
         }
 
         curl_close($ch);
-
-        // Sicherstellen, dass das JSON ordnungsgemäß abgeschlossen wird
-        return rtrim($output);  // Entfernt unnötige Leerzeichen und Zeilenumbrüche am Ende
+        return trim($output);
     }
 
     public function raw(array $messages, array $context = []) {
         throw new \RuntimeException("Streaming does not support 'raw' responses.");
-    }
-
-    // Private methods
-    function my_str_starts_with(string $haystack, string $needle): bool
-    {
-        return substr($haystack, 0, strlen($needle)) === $needle;
     }
 }
 
