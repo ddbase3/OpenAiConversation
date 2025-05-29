@@ -8,11 +8,7 @@ use Base3\Api\ICheck;
 
 class OpenAiConversationPlugin implements IPlugin, ICheck {
 
-	protected $container;
-
-	public function __construct(IContainer $container) {
-		$this->container = $container;
-	}
+	public function __construct(protected readonly IContainer $container) {}
 
 	// Implementation of IBase
 
@@ -25,18 +21,12 @@ class OpenAiConversationPlugin implements IPlugin, ICheck {
 	// Implementation of IPlugin
 
 	public function init() {
-		$this->container->set($this->getName(), $this, IContainer::SHARED);
+		$this->container->set(self::getName(), $this, IContainer::SHARED);
 	}
 
         // Implementation of ICheck
 
         public function checkDependencies(): array {
                 return [];
-        }
-
-        // Private methods
-
-        private function getClassName(): string {
-                return (new \ReflectionClass($this))->getShortName();
         }
 }
