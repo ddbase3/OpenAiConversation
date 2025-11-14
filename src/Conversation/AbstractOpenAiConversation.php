@@ -12,7 +12,7 @@ abstract class AbstractOpenAiConversation implements IConversation {
 	protected $options = [];
 
 	public function __construct(IConfiguration $configuration) {
-		$cnf = $configuration->get('openaiconversation');
+		$cnf = $configuration->get('openai');
 		if ($cnf == null) return;
 		$this->apiKey = $cnf['apikey'];
 
