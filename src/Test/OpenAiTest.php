@@ -13,7 +13,7 @@ class OpenAiTest extends AbstractOutput {
 		$this->configuration = $configuration;
 	}
 
-	public function getOutput($out = "html") {
+	public function getOutput(string $out = 'html', bool $final = false): string {
 
 		return 'Disabled';
 
@@ -33,6 +33,4 @@ class OpenAiTest extends AbstractOutput {
 
 		return $out;
 	}
-
 }
-
