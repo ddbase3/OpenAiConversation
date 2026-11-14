@@ -1,0 +1,11 @@
+{
+	"manifestVersion": 1,
+	"name": "OpenAiConversation",
+	"namespace": "Base3\\OpenAiConversation",
+	"version": "0.0.0",
+	"description": "OpenAiConversation provides conversation implementations. It supplies OpenAI-oriented chat and image conversation APIs. These implementations reuse BASE3 configuration contracts.",
+	"license": "GPL-3.0",
+	"dependencies": {
+		"CoreFoundation": ">=4.10.0"
+	}
+}

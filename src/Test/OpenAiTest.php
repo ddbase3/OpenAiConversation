@@ -1,9 +1,23 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace OpenAiConversation\Test;
+/***********************************************************************
+ * This file is part of OpenAiConversation for BASE3 Framework.
+ *
+ * OpenAiConversation provides conversation implementations.
+ * It supplies OpenAI-oriented chat and image conversation APIs.
+ * These implementations reuse BASE3 configuration contracts.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ ***********************************************************************/
 
-use Base3\Configuration\Api\IConfiguration;
-use Base3\Core\AbstractOutput;
+namespace Base3\OpenAiConversation\Test;
+
+use Base3\CoreFoundation\Configuration\Api\IConfiguration;
+use Base3\CoreFoundation\Base\AbstractOutput;
 
 class OpenAiTest extends AbstractOutput {
 
@@ -17,7 +31,7 @@ class OpenAiTest extends AbstractOutput {
 
 		return 'Disabled';
 
-		$conversation = new \OpenAiConversation\Conversation\SimpleChatGptConversation($this->configuration);
+		$conversation = new \Base3\OpenAiConversation\Conversation\SimpleChatGptConversation($this->configuration);
 
 		$messages = [
 			[ 'role' => 'user', 'content' => 'Why is Peru such an exciting travel destination?']

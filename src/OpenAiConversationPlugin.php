@@ -1,10 +1,25 @@
 <?php declare(strict_types=1);
 
-namespace OpenAiConversation;
+/***********************************************************************
+ * This file is part of OpenAiConversation for BASE3 Framework.
+ *
+ * OpenAiConversation provides conversation implementations.
+ * It supplies OpenAI-oriented chat and image conversation APIs.
+ * These implementations reuse BASE3 configuration contracts.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ ***********************************************************************/
 
-use Base3\Api\IPlugin;
-use Base3\Api\IContainer;
-use Base3\Api\ICheck;
+
+namespace Base3\OpenAiConversation;
+
+use Base3\CoreFoundation\Api\IPlugin;
+use Base3\CoreFoundation\Api\IContainer;
+use Base3\CoreFoundation\Api\ICheck;
 
 class OpenAiConversationPlugin implements IPlugin, ICheck {
 
