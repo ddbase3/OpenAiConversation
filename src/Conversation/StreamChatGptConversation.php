@@ -16,74 +16,74 @@
 
 namespace Base3\OpenAiConversation\Conversation;
 
-use Base3\CoreFoundation\Configuration\Api\IConfiguration;
+use RuntimeException;
 
 class StreamChatGptConversation extends AbstractOpenAiConversation {
 
-    public function __construct(IConfiguration $configuration) {
-        parent::__construct($configuration);
-    }
+	public function chat(array $messages, array $context = []): string {
+		$payload = $this->buildRequest($messages, $context);
+		$payload['stream'] = true;
+		$ch = curl_init('https://api.openai.com/v1/chat/completions');
+		if ($ch === false) {
+			throw new RuntimeException('Could not initialize OpenAI stream.');
+		}
 
-    public function chat(array $messages, array $context = []): string {
-        $context['stream'] = true;
+		$output = '';
+		$buffer = '';
+		$errorBody = '';
+		curl_setopt_array($ch, [
+			CURLOPT_HTTPHEADER => [
+				'Content-Type: application/json',
+				'Authorization: Bearer ' . $this->apiKey
+			],
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => json_encode($payload, JSON_THROW_ON_ERROR),
+			CURLOPT_CONNECTTIMEOUT => 10,
+			CURLOPT_TIMEOUT => 120,
+			CURLOPT_WRITEFUNCTION => function ($handle, string $chunk) use (&$output, &$buffer, &$errorBody): int {
+				if ((int) curl_getinfo($handle, CURLINFO_HTTP_CODE) !== 200) {
+					$errorBody .= substr($chunk, 0, max(0, 4096 - strlen($errorBody)));
+					return strlen($chunk);
+				}
 
-        $url = 'https://api.openai.com/v1/chat/completions';
-        $model = $context['model'] ?? $this->model;
+				$buffer = str_replace("\r\n", "\n", $buffer . $chunk);
+				while (($position = strpos($buffer, "\n\n")) !== false) {
+					$event = substr($buffer, 0, $position);
+					$buffer = substr($buffer, $position + 2);
+					foreach (explode("\n", $event) as $line) {
+						if (!str_starts_with($line, 'data: ')) continue;
+						$json = substr($line, 6);
+						if ($json === '[DONE]') continue;
+						$data = json_decode($json, true);
+						if (is_array($data)) {
+							$content = $data['choices'][0]['delta']['content'] ?? null;
+							if (is_string($content)) $output .= $content;
+						}
+					}
+				}
+				return strlen($chunk);
+			}
+		]);
 
-        $data = array_merge($this->options, $context, [
-            'model' => $model,
-            'messages' => $messages,
-            'stream' => true,
-            'max_tokens' => 4096
-        ]);
+		$result = curl_exec($ch);
+		$error = $result === false ? curl_error($ch) : '';
+		$httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
 
-        $headers = [
-            'Content-Type: application/json',
-            'Authorization: ' . 'Bearer ' . $this->apiKey,
-        ];
+		if ($result === false) {
+			throw new RuntimeException('OpenAI stream failed: ' . $error);
+		}
+		if ($httpCode !== 200) {
+			throw new RuntimeException($this->formatApiError($httpCode, $errorBody));
+		}
+		if (trim($output) === '') {
+			throw new RuntimeException('OpenAI stream returned no generated text.');
+		}
+		return trim($output);
+	}
 
-        $output = '';
-
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_WRITEFUNCTION => function ($ch, $chunk) use (&$output) {
-                $lines = explode("\n", $chunk);
-                foreach ($lines as $line) {
-                    $line = trim($line);
-                    if (str_starts_with($line, 'data: ')) {
-                        $json = substr($line, 6);
-                        if ($json === '[DONE]') {
-                            return strlen($chunk);
-                        }
-
-                        $data = json_decode($json, true);
-                        if (isset($data['choices'][0]['delta']['content'])) {
-                            $output .= $data['choices'][0]['delta']['content'];
-                        }
-                    }
-                }
-                return strlen($chunk);
-            }
-        ]);
-
-        curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            throw new \RuntimeException('OpenAI API stream failed: ' . $error);
-        }
-
-        curl_close($ch);
-        return trim($output);
-    }
-
-    public function raw(array $messages, array $context = []) {
-        throw new \RuntimeException("Streaming does not support 'raw' responses.");
-    }
+	public function raw(array $messages, array $context = []) {
+		throw new RuntimeException('Streaming does not support raw responses.');
+	}
 }
-

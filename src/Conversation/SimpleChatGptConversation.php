@@ -16,21 +16,18 @@
 
 namespace Base3\OpenAiConversation\Conversation;
 
-use Base3\CoreFoundation\Configuration\Api\IConfiguration;
-
 class SimpleChatGptConversation extends AbstractOpenAiConversation {
-
-	public function __construct(IConfiguration $configuration) {
-		parent::__construct($configuration);
-	}
 
 	public function chat(array $messages, array $context = []): string {
 		$response = $this->sendRequest($messages, $context);
-		return $response['choices'][0]['message']['content'] ?? '';
+		$content = $response['choices'][0]['message']['content'] ?? null;
+		if (!is_string($content) || trim($content) === '') {
+			throw new \RuntimeException('OpenAI returned no generated text.');
+		}
+		return $content;
 	}
 
 	public function raw(array $messages, array $context = []) {
 		return $this->sendRequest($messages, $context);
 	}
 }
-
